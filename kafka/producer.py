@@ -35,10 +35,42 @@ def generate_order():
         "ordered_at": datetime.now().isoformat(),
     }
 
-print("Producer mulai mengirim order ke Kafka...")
+def generate_user_event():
+    product = random.choice(PRODUCTS)
+    return {
+        "event_id": fake.uuid4(),
+        "user_id": fake.uuid4(),
+        "event_type": random.choice(["view", "click", "add_to_cart", "remove_from_cart"]),
+        "product_id": product["id"],
+        "product_name": product["name"],
+        "session_id": fake.uuid4(),
+        "timestamp": datetime.now().isoformat(),
+    }
+
+def generate_payment():
+    return {
+        "payment_id": fake.uuid4(),
+        "order_id": fake.uuid4(),
+        "amount": random.randint(1, 5) * random.choice([p["price"] for p in PRODUCTS]),
+        "method": random.choice(["transfer", "gopay", "ovo", "dana", "cod"]),
+        "status": random.choice(["success", "failed", "pending"]),
+        "paid_at": datetime.now().isoformat(),
+    }
+
+print("Producer mulai mengirim data ke semua topic...")
 
 while True:
     order = generate_order()
     producer.send('orders', value=order)
-    print(f"Terkirim: {order['order_id']} | {order['product_name']} | Rp{order['total_price']:,}")
+    print(f"[ORDER]   {order['product_name']} | Rp{order['total_price']:,} | {order['status']}")
+
+    event = generate_user_event()
+    producer.send('user-events', value=event)
+    print(f"[EVENT]   {event['event_type']} → {event['product_name']}")
+
+    payment = generate_payment()
+    producer.send('payments', value=payment)
+    print(f"[PAYMENT] Rp{payment['amount']:,} | {payment['method']} | {payment['status']}")
+
+    print("---")
     time.sleep(2)
