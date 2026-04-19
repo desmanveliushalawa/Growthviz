@@ -77,6 +77,23 @@ services:
     volumes:
       - ./spark:/opt/spark-apps
       - ./data:/opt/spark-data
+  metabase:
+    image: metabase/metabase:v0.48.0
+    container_name: glowcart-metabase
+    depends_on:
+      - postgres
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: glowcart_db
+      MB_DB_PORT: 5432
+      MB_DB_USER: glowcart
+      MB_DB_PASS: glowcart123
+      MB_DB_HOST: postgres
+    ports:
+      - "3000:3000"
+    volumes:
+      - metabase_data:/metabase-data
 
 volumes:
   postgres_data:
+  metabase_data:
