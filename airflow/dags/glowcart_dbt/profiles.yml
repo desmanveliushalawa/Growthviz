@@ -1,0 +1,12 @@
+glowcart_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: postgres
+      user: glowcart
+      password: glowcart123
+      port: 5432
+      dbname: glowcart_db
+      schema: analytics
+      threads: 1
