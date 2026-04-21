@@ -1,4 +1,4 @@
-# GlowCart — End-to-End E-Commerce Data Platform
+# Growthviz — End-to-End E-Commerce Data Platform
 
 Pipeline data e-commerce otomatis dari event streaming hingga dashboard analitik.
 
