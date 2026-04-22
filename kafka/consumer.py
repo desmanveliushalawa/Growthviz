@@ -18,7 +18,7 @@ def save_to_file(topic, data):
 def consume_topic(topic):
     consumer = KafkaConsumer(
         topic,
-        bootstrap_servers='localhost:9092',
+        bootstrap_servers='localhost:9093',
         value_deserializer=lambda v: json.loads(v.decode('utf-8')),
         auto_offset_reset='latest',
         group_id=f'glowcart-{topic}-consumer',

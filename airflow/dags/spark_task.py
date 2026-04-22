@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_timestamp, current_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, LongType
+from datetime import datetime
 import os
 
 spark = SparkSession.builder \
@@ -23,17 +24,18 @@ schema = StructType([
 ])
 
 RAW_PATH = "/opt/airflow/data/raw/orders/"
+today = datetime.now().strftime('%Y-%m-%d')
+today_file = os.path.join(RAW_PATH, f"{today}.jsonl")
 
-jsonl_files = [f for f in os.listdir(RAW_PATH) if f.endswith('.jsonl')]
-
-if not jsonl_files:
-    print("Tidak ada file .jsonl ditemukan.")
+if not os.path.exists(today_file):
+    print(f"Tidak ada file untuk hari ini: {today_file}")
     spark.stop()
     exit()
 
-print(f"Memproses {len(jsonl_files)} file: {jsonl_files}")
+print(f"Memproses file: {today_file}")
 
-df = spark.read.schema(schema).json(RAW_PATH)
+df = spark.read.schema(schema).json(today_file)
+print(f"Total records dibaca: {df.count()}")
 
 df_clean = df \
     .dropDuplicates(["order_id"]) \
@@ -51,13 +53,12 @@ POSTGRES_PROPS = {
     "driver": "org.postgresql.Driver"
 }
 
-df_clean.write \
-    .jdbc(
-        url=POSTGRES_URL,
-        table="raw_orders",
-        mode="overwrite",
-        properties=POSTGRES_PROPS
-    )
+df_clean.write.jdbc(
+    url=POSTGRES_URL,
+    table="raw_orders",
+    mode="append",
+    properties=POSTGRES_PROPS
+)
 
-print("Data berhasil dimuat ke PostgreSQL!")
+print(f"Data {today} berhasil dimuat ke PostgreSQL!")
 spark.stop()
