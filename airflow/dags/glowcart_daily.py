@@ -5,14 +5,14 @@ from datetime import datetime, timedelta
 default_args = {
     'owner': 'glowcart',
     'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    'retry_delay': timedelta(minutes=2),
 }
 
 with DAG(
     dag_id='glowcart_daily_pipeline',
     default_args=default_args,
-    description='Pipeline harian GlowCart - generate, simpan, proses, dan transform data',
-    schedule='0 6 * * *',
+    description='Pipeline GlowCart - update setiap 5 menit',
+    schedule='*/5 * * * *',
     start_date=datetime(2026, 4, 1),
     catchup=False,
     tags=['glowcart', 'kafka'],
@@ -31,7 +31,6 @@ with DAG(
     spark_process = BashOperator(
         task_id='spark_process',
         bash_command="""
-            cd /home/airflow &&
             pip install pyspark psycopg2-binary -q &&
             export JAVA_HOME=/usr/lib/jvm/default-java &&
             python3 /opt/airflow/dags/spark_task.py || true
